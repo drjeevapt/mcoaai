@@ -164,6 +164,10 @@ export function Navbar() {
             Mock Exams
           </Link>
 
+          <Link href="/webinars" className="hover:text-mcoa-amethyst transition py-2 text-mcoa-gold font-bold">
+            Webinars
+          </Link>
+
           <Link href="/why-mcoa" className="hover:text-mcoa-amethyst transition py-2">
             Why MCOA
           </Link>

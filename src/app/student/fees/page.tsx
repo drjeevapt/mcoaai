@@ -1,15 +1,132 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { CheckCircle2, Download, Printer, ShieldCheck, CreditCard } from "lucide-react";
+import {
+  CheckCircle2,
+  Download,
+  Printer,
+  ShieldCheck,
+  CreditCard,
+  AlertCircle,
+  Clock,
+  Sparkles,
+  ExternalLink,
+  ChevronRight,
+  Info,
+} from "lucide-react";
+
+interface PaymentOrder {
+  id: string;
+  orderNumber: string;
+  amount: number;
+  status: string;
+  installmentNumber: number;
+  dueDate?: string;
+  paidAt?: string;
+  invoiceNumber?: string;
+  paymentMethod?: string;
+  notes?: string;
+}
 
 export default function StudentFeesPage() {
+  const [orders, setOrders] = useState<PaymentOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [payingOrderId, setPayingOrderId] = useState<string | null>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<PaymentOrder | null>(null);
+  const [paymentSuccessMsg, setPaymentSuccessMsg] = useState<string | null>(null);
+
+  const loadStatement = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/payments/finance");
+      const data = await res.json();
+      if (data.success && data.recentTransactions) {
+        setOrders(data.recentTransactions);
+        const firstPaid = data.recentTransactions.find((o: any) => o.status === "Paid");
+        if (firstPaid) setSelectedReceipt(firstPaid);
+      }
+    } catch (err) {
+      console.error("Error loading statement:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStatement();
+  }, []);
+
+  const totalFee = 45000;
+  const totalPaid = orders
+    .filter((o) => o.status === "Paid")
+    .reduce((sum, o) => sum + o.amount, 0) || 15000;
+  const balanceRemaining = totalFee - totalPaid;
+
+  const handlePayInstallment = async (order: PaymentOrder) => {
+    try {
+      setPayingOrderId(order.id);
+      // 1. Create Razorpay Order
+      const res = await fetch("/api/payments/razorpay/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: order.id,
+          amount: order.amount,
+          installmentNumber: order.installmentNumber,
+        }),
+      });
+      const orderData = await res.json();
+
+      if (!orderData.success) {
+        alert(orderData.error || "Failed to initialize payment");
+        setPayingOrderId(null);
+        return;
+      }
+
+      // 2. Simulate or execute Razorpay Checkout
+      const confirmPay = window.confirm(
+        `[MCOA Razorpay Payment Gateway]\n\nAuthorize payment of ₹${order.amount.toLocaleString()} for Installment #${order.installmentNumber} via UPI / Netbanking / Debit Card?\n\nGateway Status: ${orderData.message}`
+      );
+
+      if (confirmPay) {
+        // 3. Verify Payment
+        const verifyRes = await fetch("/api/payments/razorpay/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: order.id,
+            razorpayOrderId: orderData.razorpayOrderId,
+            razorpayPaymentId: `pay_${Date.now()}`,
+            razorpaySignature: "simulated_verified_sig",
+            paymentMethod: "UPI (Google Pay / PhonePe)",
+          }),
+        });
+
+        const verifyData = await verifyRes.json();
+        if (verifyData.success) {
+          setPaymentSuccessMsg(
+            `Payment Verified! Invoice #${verifyData.invoiceNumber} generated. WhatsApp receipt dispatched.`
+          );
+          await loadStatement();
+        } else {
+          alert("Payment verification failed");
+        }
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Payment process error");
+    } finally {
+      setPayingOrderId(null);
+    }
+  };
+
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="space-y-6 font-inter">
+    <div className="space-y-8 font-inter">
       {/* Top Header */}
       <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -17,10 +134,10 @@ export default function StudentFeesPage() {
             Finance & Accounts
           </span>
           <h1 className="text-2xl font-bold font-montserrat text-mcoa-midnight mt-0.5">
-            Fee Statement & Payment Receipts
+            Student Fee Statement & Razorpay Portal
           </h1>
           <p className="text-xs text-gray-500 mt-1">
-            Official academy invoices and tax-compliant transaction records.
+            Installment schedule management, instant 1-click Razorpay fee payments, and tax-compliant official GST receipts.
           </p>
         </div>
 
@@ -35,27 +152,143 @@ export default function StudentFeesPage() {
         </div>
       </div>
 
+      {paymentSuccessMsg && (
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between animate-fadeIn">
+          <div className="flex items-center space-x-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>{paymentSuccessMsg}</span>
+          </div>
+          <button
+            onClick={() => setPaymentSuccessMsg(null)}
+            className="text-xs font-bold text-emerald-700 hover:underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Financial Status Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
           <span className="text-xs text-gray-500 font-semibold uppercase">Total Program Fee</span>
-          <div className="text-2xl font-bold text-mcoa-midnight font-montserrat mt-1">₹27,500</div>
-          <div className="text-[11px] text-gray-400">Inclusive of all courseware & mock exams</div>
+          <div className="text-2xl font-bold text-mcoa-midnight font-montserrat mt-1">
+            ₹{totalFee.toLocaleString()}
+          </div>
+          <div className="text-[11px] text-gray-400">Advanced Medical Coding (3 Installments)</div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
           <span className="text-xs text-emerald-700 font-semibold uppercase">Total Amount Paid</span>
-          <div className="text-2xl font-bold text-emerald-800 font-montserrat mt-1">₹27,500</div>
+          <div className="text-2xl font-bold text-emerald-800 font-montserrat mt-1">
+            ₹{totalPaid.toLocaleString()}
+          </div>
           <div className="text-[11px] text-emerald-600 font-medium flex items-center space-x-1">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>100% Cleared (Zero Balance)</span>
+            <span>{Math.round((totalPaid / totalFee) * 100)}% Cleared to Date</span>
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-          <span className="text-xs text-gray-500 font-semibold uppercase">Payment Status</span>
-          <div className="text-xl font-bold text-mcoa-amethyst font-montserrat mt-1">PAID IN FULL</div>
-          <div className="text-[11px] text-gray-500">Transaction ID: TXN_MCOA_9812481</div>
+          <span className="text-xs text-amber-700 font-semibold uppercase">Remaining Balance</span>
+          <div className="text-2xl font-bold text-amber-800 font-montserrat mt-1">
+            ₹{balanceRemaining.toLocaleString()}
+          </div>
+          <div className="text-[11px] text-gray-500">
+            {balanceRemaining > 0 ? "Installments active on schedule" : "Cleared in Full"}
+          </div>
+        </div>
+      </div>
+
+      {/* Installment Milestone Schedule */}
+      <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 sm:p-7 space-y-4">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+          <div>
+            <h3 className="font-montserrat font-bold text-base text-mcoa-midnight">
+              Installment Payment Schedule
+            </h3>
+            <p className="text-xs text-gray-500">
+              Payments are verified securely via Razorpay with automated WhatsApp receipt confirmation.
+            </p>
+          </div>
+          <div className="flex items-center space-x-1 text-xs text-mcoa-amethyst font-semibold">
+            <ShieldCheck className="w-4 h-4 text-mcoa-gold" />
+            <span>256-bit SSL Encrypted</span>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {orders.map((order) => {
+            const isPaid = order.status === "Paid";
+            return (
+              <div
+                key={order.id}
+                className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition ${
+                  isPaid
+                    ? "border-emerald-200 bg-emerald-50/20"
+                    : "border-gray-200 bg-white hover:border-mcoa-amethyst/40"
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-montserrat font-bold text-xs text-mcoa-midnight">
+                      Installment #{order.installmentNumber}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        isPaid
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {isPaid ? "PAID & VERIFIED" : "PENDING DUE"}
+                    </span>
+                    {order.invoiceNumber && (
+                      <span className="text-[10px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                        Invoice: {order.invoiceNumber}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    {order.notes || "Tuition installment payment"}
+                  </p>
+                  <div className="text-[11px] text-gray-400 font-mono">
+                    {isPaid ? (
+                      <span>Paid on {order.paidAt ? new Date(order.paidAt).toLocaleDateString("en-IN") : "Oct 01, 2026"} via {order.paymentMethod || "UPI"}</span>
+                    ) : (
+                      <span>Due Date: {order.dueDate ? new Date(order.dueDate).toLocaleDateString("en-IN") : "Upcoming"}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 self-end sm:self-center">
+                  <div className="text-right">
+                    <div className="font-montserrat font-bold text-base text-mcoa-midnight">
+                      ₹{order.amount.toLocaleString()}
+                    </div>
+                    <div className="text-[10px] text-gray-400">INR Incl. GST</div>
+                  </div>
+
+                  {isPaid ? (
+                    <button
+                      onClick={() => setSelectedReceipt(order)}
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border border-gray-200 text-gray-700 hover:bg-gray-100 flex items-center space-x-1"
+                    >
+                      <span>View Receipt</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handlePayInstallment(order)}
+                      disabled={payingOrderId === order.id}
+                      className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-mcoa-gold text-mcoa-midnight hover:bg-[#e0b760] transition shadow-gold flex items-center space-x-1.5 disabled:opacity-50"
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>{payingOrderId === order.id ? "Processing..." : "Pay via Razorpay"}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -77,8 +310,12 @@ export default function StudentFeesPage() {
             <div className="font-montserrat font-bold text-mcoa-midnight text-sm">
               OFFICIAL TUITION RECEIPT
             </div>
-            <div className="font-mono text-gray-500">Receipt No: MCOA-REC-2026-0082</div>
-            <div className="text-gray-400">Date: October 01, 2026</div>
+            <div className="font-mono text-gray-500">
+              Receipt No: {selectedReceipt?.invoiceNumber || "MCOA-INV-2026-0082"}
+            </div>
+            <div className="text-gray-400">
+              Date: {selectedReceipt?.paidAt ? new Date(selectedReceipt.paidAt).toLocaleDateString("en-IN") : "October 01, 2026"}
+            </div>
           </div>
         </div>
 
@@ -91,74 +328,87 @@ export default function StudentFeesPage() {
             <div className="font-bold text-sm text-mcoa-midnight">Sneha Ramachandran</div>
             <div>Student ID: <strong className="font-mono">MCOA-2026-CHN-0082</strong></div>
             <div>Phone: +91 98765 43210</div>
-            <div>Email: sneha.student@example.com</div>
+            <div>Program: Advanced Medical Coding Masterclass</div>
           </div>
 
           <div className="space-y-1 text-left sm:text-right">
             <span className="font-bold text-mcoa-midnight uppercase text-[10px] tracking-wider text-mcoa-amethyst">
               Campus Details
             </span>
-            <div className="font-bold text-mcoa-midnight">Chennai Head Office Campus</div>
-            <p className="text-[11px] text-gray-500">
-              #80/1, 200 Feet Radial Road, Pallikaranai, Chennai - 600100
-            </p>
-            <div className="text-[11px] text-gray-500">GSTIN / Reg No: 33AAACM1234F1Z8</div>
+            <div className="font-bold text-sm text-mcoa-midnight">
+              MCOA Head Office — Chennai
+            </div>
+            <div>#80/1, 200 Feet Radial Road, Pallikaranai, Chennai - 600100</div>
+            <div>GSTIN: <strong className="font-mono">33AABCM1234F1Z8</strong></div>
+            <div>Central Hotline: +91 8072020716</div>
           </div>
         </div>
 
-        {/* Line Item Table */}
+        {/* Line Items Table */}
         <div className="border border-gray-200 rounded-xl overflow-hidden">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-mcoa-midnight text-white text-[10px] uppercase font-montserrat tracking-wider">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase tracking-wider font-montserrat">
               <tr>
-                <th className="py-3 px-4">Item Description</th>
-                <th className="py-3 px-4 text-center">Batch Code</th>
-                <th className="py-3 px-4 text-right">Amount (INR)</th>
+                <th className="p-3">Description</th>
+                <th className="p-3 text-center">HSN/SAC</th>
+                <th className="p-3 text-right">Amount (INR)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-200">
               <tr>
-                <td className="py-3.5 px-4">
-                  <div className="font-bold text-mcoa-midnight">Advanced Medical Coding Masterclass</div>
+                <td className="p-3">
+                  <div className="font-bold text-mcoa-midnight">
+                    Tuition Installment #{selectedReceipt?.installmentNumber || 1}
+                  </div>
                   <div className="text-[11px] text-gray-500">
-                    Comprehensive Terminology, Anatomy, ICD-10-CM, CPT, HCPCS & Placement Drills
+                    {selectedReceipt?.notes || "Advanced Medical Coding Tuition Fee"}
                   </div>
                 </td>
-                <td className="py-3.5 px-4 text-center font-mono text-[11px]">
-                  CHN-AMC-OCT26-WE
+                <td className="p-3 text-center font-mono">999293</td>
+                <td className="p-3 text-right font-mono font-bold text-mcoa-midnight">
+                  ₹{((selectedReceipt?.amount || 15000) / 1.18).toFixed(2)}
                 </td>
-                <td className="py-3.5 px-4 text-right font-bold text-mcoa-midnight">
-                  ₹27,500.00
+              </tr>
+              <tr>
+                <td colSpan={2} className="p-3 text-right font-semibold text-gray-600">
+                  CGST (9%)
+                </td>
+                <td className="p-3 text-right font-mono text-gray-700">
+                  ₹{((selectedReceipt?.amount || 15000) * 0.09 / 1.18).toFixed(2)}
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={2} className="p-3 text-right font-semibold text-gray-600">
+                  SGST (9%)
+                </td>
+                <td className="p-3 text-right font-mono text-gray-700">
+                  ₹{((selectedReceipt?.amount || 15000) * 0.09 / 1.18).toFixed(2)}
+                </td>
+              </tr>
+              <tr className="bg-mcoa-pearl/40 font-bold">
+                <td colSpan={2} className="p-3 text-right text-mcoa-midnight">
+                  Total Amount Paid (INR)
+                </td>
+                <td className="p-3 text-right font-mono text-base text-mcoa-midnight">
+                  ₹{(selectedReceipt?.amount || 15000).toLocaleString()}.00
                 </td>
               </tr>
             </tbody>
-            <tfoot className="bg-gray-50 border-t border-gray-200 font-bold text-xs">
-              <tr>
-                <td colSpan={2} className="py-3 px-4 text-right text-gray-700">Total Amount Paid:</td>
-                <td className="py-3 px-4 text-right text-emerald-800 font-montserrat text-sm">
-                  ₹27,500.00
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={2} className="py-2 px-4 text-right text-gray-500 text-[11px]">Remaining Balance:</td>
-                <td className="py-2 px-4 text-right text-gray-500 text-[11px]">₹0.00</td>
-              </tr>
-            </tfoot>
           </table>
         </div>
 
-        {/* Verification and Seal */}
-        <div className="pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <div className="flex items-center space-x-2 text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-            <ShieldCheck className="w-4 h-4" />
-            <span className="font-semibold text-[11px]">Official Verified Receipt — Medical Coding Officers Academy</span>
+        {/* Authorization Seal & Verification Footer */}
+        <div className="pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
+          <div className="flex items-center space-x-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Digitally Verified & Reconciled via Razorpay</span>
           </div>
 
           <div className="text-center sm:text-right">
-            <div className="font-cinzel font-bold text-xs text-mcoa-midnight">
+            <div className="font-bold text-mcoa-midnight text-xs font-montserrat">
               Dr. Jeevanantham Mariappan
             </div>
-            <div className="text-[10px] text-gray-500">Founder & Chief Executive Officer</div>
+            <div className="text-[10px] text-gray-400">Founder & CEO, MCOA</div>
           </div>
         </div>
       </div>

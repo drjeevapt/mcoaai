@@ -87,6 +87,12 @@ export default function StudentLayout({
               <span>Live Classes</span>
             </Link>
             <Link
+              href="/student/placements"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-mcoa-gold hover:text-white transition flex items-center space-x-1.5"
+            >
+              <span>Placements</span>
+            </Link>
+            <Link
               href="/student/fees"
               className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition flex items-center space-x-1.5"
             >
@@ -95,7 +101,7 @@ export default function StudentLayout({
             </Link>
             <Link
               href="/student/certificates"
-              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-mcoa-gold hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition flex items-center space-x-1.5"
             >
               <span>Certificate</span>
             </Link>

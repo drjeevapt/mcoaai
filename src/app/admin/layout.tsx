@@ -27,47 +27,63 @@ export default function AdminLayout({
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-1 text-xs font-semibold">
+          <nav className="hidden xl:flex items-center space-x-1 text-xs font-semibold">
             <Link
               href="/admin"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1"
             >
               <LayoutDashboard className="w-3.5 h-3.5 text-mcoa-gold" />
               <span>Overview</span>
             </Link>
             <Link
               href="/admin/crm"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1"
             >
               <Users className="w-3.5 h-3.5 text-mcoa-lavender" />
-              <span>Admissions CRM</span>
+              <span>CRM</span>
             </Link>
             <Link
               href="/admin/admissions"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-mcoa-gold" />
-              <span>Student IDs & Enroll</span>
+              <span>Admissions</span>
+            </Link>
+            <Link
+              href="/admin/finance"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-emerald-400 hover:text-white transition flex items-center space-x-1"
+            >
+              <span>Finance</span>
             </Link>
             <Link
               href="/admin/batches"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1"
             >
-              <BookOpen className="w-3.5 h-3.5 text-white/70" />
-              <span>Cohort Batches</span>
+              <span>Batches</span>
             </Link>
             <Link
-              href="/courses"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              href="/admin/sessions"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1"
             >
-              <BookOpen className="w-3.5 h-3.5 text-white/70" />
-              <span>Courses</span>
+              <span>Live Classes</span>
+            </Link>
+            <Link
+              href="/admin/whatsapp"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-emerald-300 hover:text-white transition flex items-center space-x-1"
+            >
+              <span>WhatsApp</span>
+            </Link>
+            <Link
+              href="/admin/placements"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-mcoa-gold hover:text-white transition flex items-center space-x-1"
+            >
+              <span>Placements</span>
             </Link>
             <Link
               href="/trainer"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-mcoa-gold hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition flex items-center space-x-1"
             >
-              <span>Trainer Portal</span>
+              <span>Trainer</span>
             </Link>
           </nav>
         </div>
