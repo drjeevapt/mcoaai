@@ -38,47 +38,65 @@ export default function StudentLayout({
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-1 text-xs font-semibold">
+          <nav className="hidden xl:flex items-center space-x-1 text-xs font-semibold">
             <Link
               href="/student"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
             >
               <LayoutDashboard className="w-3.5 h-3.5 text-mcoa-gold" />
               <span>Dashboard</span>
             </Link>
             <Link
               href="/student/courses/advanced-medical-coding"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
             >
               <BookOpen className="w-3.5 h-3.5 text-mcoa-lavender" />
-              <span>Classroom & Lessons</span>
+              <span>Classroom</span>
+            </Link>
+            <Link
+              href="/practice"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+            >
+              <FileText className="w-3.5 h-3.5 text-mcoa-gold" />
+              <span>Coding Simulator</span>
+            </Link>
+            <Link
+              href="/mock-exams"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+            >
+              <Award className="w-3.5 h-3.5 text-mcoa-gold" />
+              <span>Mock Exam</span>
+            </Link>
+            <Link
+              href="/student/analytics"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-emerald-400 hover:text-white transition flex items-center space-x-1.5"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Readiness</span>
             </Link>
             <Link
               href="/student/assignments"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition flex items-center space-x-1.5"
             >
-              <FileText className="w-3.5 h-3.5 text-white/70" />
-              <span>Chart Assignments</span>
+              <span>Assignments</span>
             </Link>
             <Link
               href="/student/attendance"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition flex items-center space-x-1.5"
             >
-              <CalendarCheck className="w-3.5 h-3.5 text-white/70" />
-              <span>Attendance & Live</span>
+              <span>Live Classes</span>
             </Link>
             <Link
               href="/student/fees"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition flex items-center space-x-1.5"
             >
               <CreditCard className="w-3.5 h-3.5 text-white/70" />
-              <span>Fee Receipt</span>
+              <span>Fees</span>
             </Link>
             <Link
               href="/student/certificates"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-mcoa-gold hover:text-white transition flex items-center space-x-1.5"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-mcoa-gold hover:text-white transition flex items-center space-x-1.5"
             >
-              <Award className="w-3.5 h-3.5 text-mcoa-gold" />
               <span>Certificate</span>
             </Link>
           </nav>

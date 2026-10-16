@@ -48,121 +48,29 @@ export default function StudentCoursePlayerPage({
   const [studentNote, setStudentNote] = useState("");
   const [noteSaved, setNoteSaved] = useState(false);
 
-  // Initial load
+  // Initial load from real database curriculum
   useEffect(() => {
-    // Standard mock modules for AMC
-    const initialModules: Module[] = [
-      {
-        id: "mod-1",
-        title: "Module 1: Clinical Foundations & Medical Terminology",
-        order: 1,
-        lessons: [
-          {
-            id: "les-1",
-            title: "Lesson 1: Introduction to US Healthcare RCM & Medical Coding Roles",
-            order: 1,
-            duration: "45 mins",
-            videoUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
-            content: `### Welcome to Medical Coding Officers Academy (MCOA)
-In this fundamental lecture, Dr. Jeevanantham introduces the global revenue cycle framework. 
-
-**Key Concepts Covered:**
-1. Payer, Provider, and Patient triad in US Healthcare
-2. Difference between Inpatient (Facility) and Outpatient (Professional) billing
-3. The role of AAPC CPC and AHIMA CCS credentials
-4. Ethical code sequencing and compliance basics.`,
-            pdfUrl: "/materials/mcoa_m1_l1_introduction.pdf",
-            completed: true,
-          },
-          {
-            id: "les-2",
-            title: "Lesson 2: Anatomical Directional Terms & Body Planes",
-            order: 2,
-            duration: "55 mins",
-            videoUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
-            content: `### Anatomical Terminology for Medical Coders
-Understanding directional planes is critical for procedural coding (CPT) and inpatient approaches (ICD-10-PCS).
-
-**Key Points:**
-- Anterior (Ventral) vs Posterior (Dorsal)
-- Medial, Lateral, Proximal, Distal
-- Sagittal, Coronal, and Transverse sections
-- Major body cavities: Cranial, Thoracic, Abdominal, Pelvic.`,
-            pdfUrl: "/materials/mcoa_m1_l2_anatomy.pdf",
-            completed: true,
-          },
-          {
-            id: "les-3",
-            title: "Lesson 3: Pathophysiology & Diagnostic Laboratory Tests",
-            order: 3,
-            duration: "60 mins",
-            videoUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
-            content: `### Pathophysiology & Lab Values
-How to link physician diagnostic findings with lab results:
-- Complete Blood Count (CBC) with differential
-- Comprehensive Metabolic Panel (CMP)
-- Arterial Blood Gas (ABG) for respiratory failure
-- Microbiology culture and sensitivity interpretations.`,
-            pdfUrl: "/materials/mcoa_m1_l3_patho.pdf",
-            completed: true,
-          },
-        ],
-      },
-      {
-        id: "mod-2",
-        title: "Module 2: ICD-10-CM Diagnosis Coding Mastery",
-        order: 2,
-        lessons: [
-          {
-            id: "les-4",
-            title: "Lesson 4: Official Guidelines for Coding and Reporting (OGCR)",
-            order: 1,
-            duration: "65 mins",
-            videoUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
-            content: `### ICD-10-CM Conventions & General Rules
-- Excludes1 (Not coded here!) vs Excludes2 (Not included here)
-- "Code First" and "Use Additional Code" instructions
-- Signs and symptoms vs definitive diagnoses
-- Acute and chronic condition sequencing priority.`,
-            pdfUrl: "/materials/mcoa_m2_l4_guidelines.pdf",
-            completed: false,
-          },
-          {
-            id: "les-5",
-            title: "Lesson 5: Chapter 2 Neoplasms & Histology Cross-Referencing",
-            order: 2,
-            duration: "70 mins",
-            videoUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
-            content: `### Neoplasm Coding Strategies
-- Malignant Primary vs Secondary (Metastatic)
-- Carcinoma in Situ vs Benign vs Uncertain Behavior
-- Sequencing surgical excision vs chemotherapy encounters
-- Pathology report dissection.`,
-            pdfUrl: "/materials/mcoa_m2_l5_neoplasms.pdf",
-            completed: false,
-          },
-          {
-            id: "les-6",
-            title: "Lesson 6: Chapter 4 Endocrine & Diabetes Manifestations",
-            order: 3,
-            duration: "60 mins",
-            videoUrl: "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
-            content: `### Diabetes Mellitus (E08 - E13)
-- Type 1 (E10) vs Type 2 (E11) diabetes
-- Combination codes for nephropathy, retinopathy, and neuropathy
-- Insulin dependence (Z79.4) vs oral hypoglycemic agents (Z79.84).`,
-            pdfUrl: "/materials/mcoa_m2_l6_diabetes.pdf",
-            completed: false,
-          },
-        ],
-      },
-    ];
-
-    setModules(initialModules);
-    // Set active lesson to lesson 4 (first incomplete)
-    setActiveLesson(initialModules[1].lessons[0]);
-    setLoading(false);
-  }, []);
+    async function loadCurriculum() {
+      try {
+        const slug = params.courseId || "advanced-medical-coding";
+        const res = await fetch(`/api/student/curriculum?slug=${slug}`);
+        const data = await res.json();
+        if (data.success && data.modules.length > 0) {
+          setModules(data.modules);
+          const firstIncomplete = data.modules
+            .flatMap((m: any) => m.lessons)
+            .find((l: any) => !l.completed);
+          setActiveLesson(firstIncomplete || data.modules[0].lessons[0]);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to load dynamic curriculum:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadCurriculum();
+  }, [params.courseId]);
 
   const handleToggleComplete = async (lesson: Lesson) => {
     setUpdating(true);

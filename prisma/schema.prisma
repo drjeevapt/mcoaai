@@ -106,6 +106,8 @@ model User {
   attendanceRecords AttendanceRecord[]
   lessonProgress    LessonProgress[]
   studentNotes      StudentNote[]
+  practiceAttempts  PracticeAttempt[]
+  examAttempts      ExamAttempt[]
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
 }
@@ -258,10 +260,87 @@ model StudentNote {
   createdAt DateTime @default(now())
 }
 
+// ==========================================
+// Phase 3: Coding Practice & Mock Exam Engine
+// ==========================================
+
+model PracticeCase {
+  id               String            @id @default(cuid())
+  slug             String            @unique
+  title            String
+  category         String            // "ICD-10-CM", "CPT Surgery", "E&M", "ICD-10-PCS", "MS-DRG", "HCC Risk Adjustment"
+  difficulty       String            // "Beginner", "Intermediate", "Advanced"
+  specialty        String            // "Cardiology", "Orthopedics", "General Surgery", "Gastroenterology", "Endocrinology", "Pulmonology"
+  clinicalChart    String            // Authentic synthetic operative / encounter report
+  recommendedCodes String            // JSON string: { primaryDiagnosis, secondaryDiagnoses, procedures, modifiers }
+  rationale        String            // Step-by-step guideline explanation
+  commonPitfalls   String?           // Frequent coding mistakes on this case
+  guidelineRef     String?           // Official codebook guideline citation
+  attempts         PracticeAttempt[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model PracticeAttempt {
+  id          String       @id @default(cuid())
+  caseId      String
+  case        PracticeCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userCodes   String       // JSON string of student submitted codes
+  isCorrect   Boolean      @default(false)
+  timeSpent   Int?         // in seconds
+  createdAt   DateTime     @default(now())
+}
+
+model MockExam {
+  id                  String         @id @default(cuid())
+  slug                String         @unique
+  title               String
+  certificationTrack  String         // "AAPC CPC®", "AHIMA CCS®", "AAPC CRC®"
+  description         String
+  durationMinutes     Int            @default(120)
+  totalQuestions      Int            @default(25)
+  passingScorePercent Int            @default(70)
+  questions           ExamQuestion[]
+  attempts            ExamAttempt[]
+  createdAt           DateTime       @default(now())
+}
+
+model ExamQuestion {
+  id                 String   @id @default(cuid())
+  examId             String
+  exam               MockExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  domain             String   // "Surgery (10000-60000)", "Evaluation & Management", "Anesthesia & Radiology", "Pathology & Laboratory", "ICD-10-CM", "HCPCS & Compliance"
+  questionText       String
+  scenarioText       String?
+  options            String   // JSON string: ["A) ...", "B) ...", "C) ...", "D) ..."]
+  correctOptionIndex Int      // 0, 1, 2, or 3
+  explanation        String   // Detailed rationale for the correct answer
+  guidelineRef       String?  // Reference citation
+  createdAt          DateTime @default(now())
+}
+
+model ExamAttempt {
+  id               String   @id @default(cuid())
+  examId           String
+  exam             MockExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score            Int
+  total            Int
+  percentage       Int
+  passed           Boolean
+  domainScores     String   // JSON string: { "Surgery": { correct: 4, total: 5 }, "E&M": { correct: 3, total: 3 } }
+  answers          String   // JSON string of user answers
+  timeSpentSeconds Int
+  completedAt      DateTime @default(now())
+}
+
 model AuditLog {
   id          String   @id @default(cuid())
-  action      String   // "LEAD_CREATED", "LEAD_STATUS_CHANGED", "ENROLLMENT_APPROVED", "ASSIGNMENT_GRADED"
-  entityType  String   // "Lead", "Course", "User", "Enrollment", "Batch"
+  action      String   // "LEAD_CREATED", "ENROLLMENT_APPROVED", "EXAM_COMPLETED", "PRACTICE_SUBMITTED"
+  entityType  String   // "Lead", "Course", "User", "Enrollment", "Batch", "ExamAttempt"
   entityId    String?
   performedBy String   @default("System")
   details     String?  // JSON string

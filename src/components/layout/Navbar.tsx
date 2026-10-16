@@ -156,6 +156,14 @@ export function Navbar() {
             )}
           </div>
 
+          <Link href="/practice" className="hover:text-mcoa-amethyst transition py-2 text-mcoa-amethyst font-bold">
+            Simulator
+          </Link>
+
+          <Link href="/mock-exams" className="hover:text-mcoa-amethyst transition py-2">
+            Mock Exams
+          </Link>
+
           <Link href="/why-mcoa" className="hover:text-mcoa-amethyst transition py-2">
             Why MCOA
           </Link>
