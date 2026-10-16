@@ -11,6 +11,7 @@ import {
   User,
   GraduationCap,
 } from "lucide-react";
+import StudentCodingTutor from "@/components/ai/StudentCodingTutor";
 
 export default function StudentLayout({
   children,
@@ -110,6 +111,7 @@ export default function StudentLayout({
 
         {/* Student Profile & ID */}
         <div className="flex items-center space-x-4 text-xs">
+          <StudentCodingTutor />
           <div className="text-right">
             <div className="font-bold text-white text-xs">Sneha Ramachandran</div>
             <div className="text-[10px] text-mcoa-gold font-mono">ID: MCOA-2026-CHN-0082</div>

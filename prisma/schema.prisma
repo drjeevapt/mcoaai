@@ -485,3 +485,65 @@ model JobApplication {
   updatedAt      DateTime   @updatedAt
 }
 
+model AiConversation {
+  id               String   @id @default(cuid())
+  sessionId        String
+  userId           String?
+  role             String   // "user", "assistant", "system"
+  content          String
+  category         String   @default("counselor") // "counselor", "tutor", "exam_doubt", "general"
+  citations        String?  // JSON string array of references/guidelines
+  escalatedToHuman Boolean  @default(false)
+  userEmail        String?
+  userPhone        String?
+  createdAt        DateTime @default(now())
+}
+
+model AiKnowledgeItem {
+  id         String   @id @default(cuid())
+  title      String
+  category   String   // "courses", "guidelines", "fees_admissions", "exam_prep", "career_rcm"
+  keywords   String   // comma separated terms for keyword matching & semantic retrieval
+  content    String   // verified authoritative explanation
+  source     String   // e.g. "MCOA Academic Handbook", "2026 ICD-10-CM Guideline Sec I.C.4"
+  isVerified Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model LandingPage {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  metaDescription String
+  templateType    String   @default("cpc_bootcamp") // "cpc_bootcamp", "admissions_walkin", "corporate_placement", "masterclass_event"
+  status          String   @default("Published")   // "Draft", "Published"
+  heroBadge       String   @default("Official Admissions 2026")
+  heroHeadline    String
+  heroSubheadline String
+  ctaText         String   @default("Claim Free Seat & Syllabus")
+  sectionsJson    String   // JSON string containing structured blocks: benefits, highlights, curriculumPreview, stats, faq, testimonials
+  viewsCount      Int      @default(0)
+  leadsCount      Int      @default(0)
+  targetBranch    String?  // "Chennai Head Office", "Perambalur", etc.
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  content     String   // Markdown or rich HTML content
+  authorName  String   @default("Dr. Jeevanantham Mariappan")
+  authorRole  String   @default("Founder & CEO, MCOA")
+  category    String   @default("Medical Coding") // "Medical Coding", "Exam Prep", "Career Pathways", "Coding Updates"
+  readTime    String   @default("5 min read")
+  tags        String   // comma separated tags
+  isPublished Boolean  @default(true)
+  coverImage  String?
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+

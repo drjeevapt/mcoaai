@@ -80,6 +80,24 @@ export default function AdminLayout({
               <span>Placements</span>
             </Link>
             <Link
+              href="/admin/landing-pages"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1"
+            >
+              <span>Landing Pages</span>
+            </Link>
+            <Link
+              href="/admin/ai"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-[#D8AC55] hover:text-white transition flex items-center space-x-1"
+            >
+              <span>AI Desk</span>
+            </Link>
+            <Link
+              href="/admin/reports"
+              className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-emerald-400 hover:text-white transition flex items-center space-x-1"
+            >
+              <span>Reports</span>
+            </Link>
+            <Link
               href="/trainer"
               className="px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition flex items-center space-x-1"
             >

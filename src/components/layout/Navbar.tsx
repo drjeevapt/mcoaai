@@ -168,6 +168,10 @@ export function Navbar() {
             Webinars
           </Link>
 
+          <Link href="/blog" className="hover:text-mcoa-amethyst transition py-2">
+            Blog & Insights
+          </Link>
+
           <Link href="/why-mcoa" className="hover:text-mcoa-amethyst transition py-2">
             Why MCOA
           </Link>
