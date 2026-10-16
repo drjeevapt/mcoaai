@@ -100,23 +100,37 @@ export default function LoginPage() {
         {/* Quick Demo Access Buttons for Evaluators */}
         <div className="pt-4 border-t border-gray-100 space-y-2">
           <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">
-            Quick Phase 1 Evaluator Access
+            Instant Portal Switcher
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <button
-              onClick={() => handleQuickDemo("Super Admin", "dr.jeeva@medicalcodingofficersacademy.com")}
-              className="p-2.5 rounded-lg border border-mcoa-gold/50 bg-amber-50/50 hover:bg-amber-100/70 text-left transition"
+            <Link
+              href="/student"
+              className="p-2.5 rounded-lg border border-mcoa-gold/50 bg-amber-50/60 hover:bg-amber-100 text-left transition block"
+            >
+              <div className="font-bold text-mcoa-midnight text-[11px]">Sneha (Student)</div>
+              <div className="text-[10px] text-gray-600">Enter Student LMS Space →</div>
+            </Link>
+            <Link
+              href="/trainer"
+              className="p-2.5 rounded-lg border border-mcoa-amethyst/30 bg-mcoa-pearl hover:bg-mcoa-pearl/80 text-left transition block"
+            >
+              <div className="font-bold text-mcoa-midnight text-[11px]">Dr. Rajesh (Trainer)</div>
+              <div className="text-[10px] text-gray-600">Enter Faculty Portal →</div>
+            </Link>
+            <Link
+              href="/admin"
+              className="p-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-left transition block"
             >
               <div className="font-bold text-mcoa-midnight text-[11px]">Dr. Jeevanantham</div>
-              <div className="text-[10px] text-gray-600">Super Admin / CEO</div>
-            </button>
-            <button
-              onClick={() => handleQuickDemo("Admissions Counselor", "admissions@medicalcodingofficersacademy.com")}
-              className="p-2.5 rounded-lg border border-mcoa-amethyst/30 bg-mcoa-pearl hover:bg-mcoa-pearl/80 text-left transition"
+              <div className="text-[10px] text-gray-600">Executive Console →</div>
+            </Link>
+            <Link
+              href="/admin/crm"
+              className="p-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-left transition block"
             >
               <div className="font-bold text-mcoa-midnight text-[11px]">Admissions Desk</div>
-              <div className="text-[10px] text-gray-600">Counselor CRM</div>
-            </button>
+              <div className="text-[10px] text-gray-600">CRM Pipeline →</div>
+            </Link>
           </div>
         </div>
 

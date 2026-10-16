@@ -45,6 +45,14 @@ export function Navbar() {
             </a>
             <span className="text-white/30 hidden sm:inline">|</span>
             <Link
+              href="/student"
+              className="flex items-center space-x-1 text-mcoa-gold hover:text-white transition"
+            >
+              <GraduationCap className="w-3.5 h-3.5" />
+              <span>Student LMS</span>
+            </Link>
+            <span className="text-white/30 hidden sm:inline">|</span>
+            <Link
               href="/admin/crm"
               className="flex items-center space-x-1 text-white/80 hover:text-mcoa-gold transition"
             >

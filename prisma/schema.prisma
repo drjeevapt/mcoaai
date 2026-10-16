@@ -22,29 +22,34 @@ model Branch {
   updatedAt    DateTime @updatedAt
   leads        Lead[]
   users        User[]
+  batches      Batch[]
 }
 
 model Course {
-  id                 String   @id @default(cuid())
-  slug               String   @unique
+  id                 String       @id @default(cuid())
+  slug               String       @unique
   title              String
   shortCode          String
-  category           String   // "Certification Prep" | "Medical Coding" | "Specialty" | "Billing"
+  category           String       // "Certification Prep" | "Medical Coding" | "Specialty" | "Billing"
   summary            String
   description        String
   duration           String
   feeInr             Int
   discountFeeInr     Int?
-  certificationTrack String   // "AAPC CPC", "AHIMA CCS", "AAPC CRC", etc.
-  trainingModes      String   // JSON string or comma-separated: "Online, Offline, Hybrid"
-  eligibility        String   // JSON string of requirements
-  syllabus           String   // JSON string of module list
-  faqs               String   // JSON string of FAQ items
-  isFeatured         Boolean  @default(false)
-  isPublished        Boolean  @default(true)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  certificationTrack String       // "AAPC CPC", "AHIMA CCS", "AAPC CRC", etc.
+  trainingModes      String       // JSON string: ["Classroom", "Online", "Hybrid"]
+  eligibility        String       // JSON string of requirements
+  syllabus           String       // JSON string of module list
+  faqs               String       // JSON string of FAQ items
+  isFeatured         Boolean      @default(false)
+  isPublished        Boolean      @default(true)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
   leads              Lead[]
+  batches            Batch[]
+  enrollments        Enrollment[]
+  modules            Module[]
+  assignments        Assignment[]
 }
 
 model Lead {
@@ -85,24 +90,178 @@ model LeadNote {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
+  id                String                 @id @default(cuid())
+  email             String                 @unique
+  name              String
+  passwordHash      String
+  role              String                 @default("Admissions Counselor") // "Super Admin", "Branch Admin", "Admissions Counselor", "Academic Coordinator", "Trainer", "Student"
+  phone             String?
+  isActive          Boolean                @default(true)
+  branchId          String?
+  branch            Branch?                @relation(fields: [branchId], references: [id])
+  assignedLeads     Lead[]
+  trainedBatches    Batch[]                @relation("TrainerBatches")
+  enrollments       Enrollment[]
+  submissions       AssignmentSubmission[]
+  attendanceRecords AttendanceRecord[]
+  lessonProgress    LessonProgress[]
+  studentNotes      StudentNote[]
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+}
+
+model Batch {
+  id           String         @id @default(cuid())
   name         String
-  passwordHash String
-  role         String    @default("Admissions Counselor") // "Super Admin", "Branch Admin", "Admissions Counselor", "Academic Coordinator", "Trainer", "Student"
-  phone        String?
-  isActive     Boolean   @default(true)
+  code         String         @unique
+  mode         String         @default("Classroom") // "Classroom", "Live Online", "Hybrid Flex"
+  timing       String         @default("Weekend") // "Weekend", "Weekday", "Evening"
+  startDate    DateTime
+  endDate      DateTime?
+  capacity     Int            @default(30)
+  status       String         @default("Upcoming") // "Upcoming", "Active", "Completed"
+  
   branchId     String?
-  branch       Branch?   @relation(fields: [branchId], references: [id])
-  assignedLeads Lead[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  branch       Branch?        @relation(fields: [branchId], references: [id])
+  
+  courseId     String
+  course       Course         @relation(fields: [courseId], references: [id])
+  
+  trainerId    String?
+  trainer      User?          @relation("TrainerBatches", fields: [trainerId], references: [id])
+  
+  enrollments  Enrollment[]
+  sessions     BatchSession[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model BatchSession {
+  id                String             @id @default(cuid())
+  batchId           String
+  batch             Batch              @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  title             String
+  sessionDate       DateTime
+  startTime         String             // "10:00 AM"
+  endTime           String             // "01:00 PM"
+  meetUrl           String?
+  recordingUrl      String?
+  status            String             @default("Scheduled") // "Scheduled", "Completed", "Cancelled"
+  attendanceRecords AttendanceRecord[]
+  createdAt         DateTime           @default(now())
+}
+
+model Enrollment {
+  id                String   @id @default(cuid())
+  studentIdNumber   String   @unique // e.g. "MCOA-2026-CHN-001"
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId          String
+  course            Course   @relation(fields: [courseId], references: [id])
+  batchId           String?
+  batch             Batch?   @relation(fields: [batchId], references: [id])
+  status            String   @default("Active") // "Active", "Completed", "Paused"
+  totalFee          Int
+  paidFee           Int      @default(0)
+  progressPercent   Int      @default(0)
+  certificateIssued Boolean  @default(false)
+  certificateId     String?
+  enrollmentDate    DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title     String
+  order     Int      @default(1)
+  lessons   Lesson[]
+  createdAt DateTime @default(now())
+}
+
+model Lesson {
+  id            String           @id @default(cuid())
+  moduleId      String
+  module        Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title         String
+  order         Int              @default(1)
+  duration      String           // "45 mins"
+  videoUrl      String?          // URL to secure video or embed
+  content       String?          // Lecture text/markdown summary
+  pdfUrl        String?          // Study notes PDF reference
+  isFreePreview Boolean          @default(false)
+  progress      LessonProgress[]
+  studentNotes  StudentNote[]
+  createdAt     DateTime         @default(now())
+}
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  lessonId    String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([lessonId, userId])
+}
+
+model Assignment {
+  id          String                 @id @default(cuid())
+  courseId    String
+  course      Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  chartData   String?                // Clinical chart scenario for coding
+  dueDate     DateTime
+  maxScore    Int                    @default(100)
+  submissions AssignmentSubmission[]
+  createdAt   DateTime               @default(now())
+}
+
+model AssignmentSubmission {
+  id           String     @id @default(cuid())
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content      String     // Student's coded solution, rationale, and codes
+  score        Int?
+  feedback     String?
+  gradedAt     DateTime?
+  gradedBy     String?
+  submittedAt  DateTime   @default(now())
+}
+
+model AttendanceRecord {
+  id        String       @id @default(cuid())
+  sessionId String
+  session   BatchSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    String       @default("Present") // "Present", "Absent", "Late", "Excused"
+  markedAt  DateTime     @default(now())
+
+  @@unique([sessionId, userId])
+}
+
+model StudentNote {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String?
+  lesson    Lesson?  @relation(fields: [lessonId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
 }
 
 model AuditLog {
   id          String   @id @default(cuid())
-  action      String   // "LEAD_CREATED", "LEAD_STATUS_CHANGED", "NOTE_ADDED", "USER_LOGIN"
-  entityType  String   // "Lead", "Course", "User"
+  action      String   // "LEAD_CREATED", "LEAD_STATUS_CHANGED", "ENROLLMENT_APPROVED", "ASSIGNMENT_GRADED"
+  entityType  String   // "Lead", "Course", "User", "Enrollment", "Batch"
   entityId    String?
   performedBy String   @default("System")
   details     String?  // JSON string

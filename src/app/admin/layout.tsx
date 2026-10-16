@@ -43,18 +43,31 @@ export default function AdminLayout({
               <span>Admissions CRM</span>
             </Link>
             <Link
+              href="/admin/admissions"
+              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-mcoa-gold" />
+              <span>Student IDs & Enroll</span>
+            </Link>
+            <Link
+              href="/admin/batches"
+              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-white/70" />
+              <span>Cohort Batches</span>
+            </Link>
+            <Link
               href="/courses"
               className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
             >
               <BookOpen className="w-3.5 h-3.5 text-white/70" />
-              <span>Course Catalog</span>
+              <span>Courses</span>
             </Link>
             <Link
-              href="/contact"
-              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-white/90 hover:text-white transition flex items-center space-x-1.5"
+              href="/trainer"
+              className="px-3 py-1.5 rounded-lg hover:bg-white/10 text-mcoa-gold hover:text-white transition flex items-center space-x-1.5"
             >
-              <MapPin className="w-3.5 h-3.5 text-white/70" />
-              <span>Branches</span>
+              <span>Trainer Portal</span>
             </Link>
           </nav>
         </div>
